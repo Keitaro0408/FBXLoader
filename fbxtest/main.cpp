@@ -36,7 +36,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 	HWND hWnd = NULL;
 	MSG msg;
 	// ウィンドウの初期化
-	static TCHAR* szAppName = _T("DragonKingdom");
+	static TCHAR* szAppName = _T("FBXTest");
 	WNDCLASSEX  wndclass;
 
 
@@ -190,7 +190,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 	pDeviceContext->RSSetState(pRasterizerState);
 
 	FBXLoader fbxLoader(pDevice);
-	fbxLoader.FileLoad("fbx//house_hinmin.fbx");
+	fbxLoader.FileLoad("fbx//house_seleb.fbx");
 	FBXModel  testModel(pDevice,pDeviceContext);
 	fbxLoader.GetModelData(&testModel);
 

@@ -153,8 +153,8 @@ void FBXModel::Draw()
 	D3DXMatrixMultiply(&World, &World,&Rotate);
 	rad += 0.01;
 	// ビュートランスフォーム
-	D3DXVECTOR3 vEyePt(0.0f, 5.0f, -500.0f);		//視点位置
-	D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);	//注視位置
+	D3DXVECTOR3 vEyePt(0.0f, 600.0f, -800.0f);		//視点位置
+	D3DXVECTOR3 vLookatPt(0.0f, 100.0f, 0.0f);	//注視位置
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);		//上方位置
 	D3DXMatrixLookAtLH(&View, &vEyePt, &vLookatPt, &vUpVec);
 
