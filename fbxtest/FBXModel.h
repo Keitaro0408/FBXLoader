@@ -1,27 +1,27 @@
 #ifndef _FBXMODEL_
 #define _FBXMODEL_
-#include <DirectXMath.h>
 #include <d3d11.h>
 #include <d3dx11.h>	
 #include <vector>
+#include <d3dx10.h>	
 
 
 struct UserMaterial
 {
-	DirectX::XMFLOAT4 Diffuse;  //拡散反射光
-	DirectX::XMFLOAT4 Ambient;  //環境光
-	DirectX::XMFLOAT4 Specular; //鏡面反射光
-	DirectX::XMFLOAT4 Emissive; //放射光
-	float			  Power;	//マテリアルのスペキュラ色指数
+	D3DXCOLOR Diffuse;  //拡散反射光
+	D3DXCOLOR Ambient;  //環境光
+	D3DXCOLOR Specular; //鏡面反射光
+	D3DXCOLOR Emissive; //放射光
+	float	  Power;	//マテリアルのスペキュラ色指数
 };
 
 // 頂点情報が格納される構造体
 struct UserVertex
 {
-	DirectX::XMFLOAT3 Vec;		//頂点データ
-	DirectX::XMFLOAT3 Normal;	//頂点データ
-	float			  tu;		//テクスチャ座標x
-	float			  tv;		//テクスチャ座標y
+	D3DXVECTOR3 Vec;	//頂点データ
+	D3DXVECTOR3 Normal;	//頂点データ
+	float		tu;		//テクスチャ座標x
+	float		tv;		//テクスチャ座標y
 };
 
 struct UserTexture
@@ -44,13 +44,13 @@ struct FBXModelData
 class FBXModel
 {
 public:
-	FBXModel();
+	FBXModel(ID3D11Device* _pDevice, ID3D11DeviceContext* _pDeviceContext);
 	~FBXModel();
 	std::vector<FBXModelData*>	m_pFbxModelData;
 	void Draw();
 private:
 	ID3D11Device* m_pDevice;
-	ID3D11DeviceContext* pDeviceContext;
+	ID3D11DeviceContext* m_pDeviceContext;
 
 };
 #endif

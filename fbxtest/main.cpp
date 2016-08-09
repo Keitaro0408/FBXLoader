@@ -2,12 +2,13 @@
 #include <crtdbg.h>
 #include <tchar.h>
 #include <windows.h>
-
+#include <xnamath.h>
 #include <d3d11.h>
 #include <d3dx11.h>	
 #include "vs.h"
 #include "ps.h"
-
+#include "FBXLoader.h"
+#include "FBXModel.h"
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dx11.lib")
 #pragma comment(lib, "winmm.lib")
@@ -107,7 +108,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 		MessageBox(hWnd, "DX11のファクトリーの作成に失敗しました。", "Err", MB_ICONSTOP);
 		return 1;
 	}
-
 	//ALT + Enterでフルスク
 	if (FAILED(pDXGIFactory->MakeWindowAssociation(hWnd, 0)))
 	{
@@ -198,87 +198,82 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 		{ { +0.5f, -0.5f, +0.5f }, { 1.0f, 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f } }
 	};
 
-	//頂点レイアウト
+	//--------------------------------------
+	// シェーダーの読み込みやレイアウト作成
+	//--------------------------------------
+	ID3DBlob* pCompiledShader = NULL;
+	ID3DBlob *pErrors = NULL;
+
+	//-------------------
+	// 頂点シェーダーの読み込みとレイアウト作成
+	//-------------------
+	ID3D11VertexShader* pVertexShader = NULL;
+	ID3D11InputLayout* pVertexShaderLayout = NULL;
+	if (FAILED(D3DX11CompileFromFile(
+		"Effect.fx",
+		NULL,
+		NULL,
+		"VS",
+		"vs_5_0",
+		D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION,
+		0,
+		NULL,
+		&pCompiledShader,
+		&pErrors,
+		NULL)))
+	{
+		MessageBox(0, "VertexShaderのコンパイルに失敗", 0, MB_OK);
+		return E_FAIL;
+	}
+	pDevice->CreateVertexShader(pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), NULL, &pVertexShader);
+
+	//頂点レイアウト定義
 	D3D11_INPUT_ELEMENT_DESC InElementDesc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 4 * 3, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 4 * 3 + 4 * 4, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, sizeof(D3DXVECTOR3), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, sizeof(D3DXVECTOR3) + sizeof(D3DXVECTOR3), D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
-	//頂点バッファ作成
-	D3D11_BUFFER_DESC BufferDesc;
-	BufferDesc.ByteWidth = sizeof(Vertex3D) * VERTEXNUM;
-	BufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	BufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	BufferDesc.CPUAccessFlags = 0;
-	BufferDesc.MiscFlags = 0;
-	BufferDesc.StructureByteStride = sizeof(float);
+	//頂点インプットレイアウトを作成
+	pDevice->CreateInputLayout(
+		InElementDesc,
+		sizeof(InElementDesc) / sizeof(InElementDesc[0]),
+		pCompiledShader->GetBufferPointer(),
+		pCompiledShader->GetBufferSize(),
+		&pVertexShaderLayout);
 
-	D3D11_SUBRESOURCE_DATA SubResourceData;
-	SubResourceData.pSysMem = VectorData;
-	SubResourceData.SysMemPitch = 0;
-	SubResourceData.SysMemSlicePitch = 0;
+	pCompiledShader->Release();
 
-	ID3D11Buffer* pBuffer;
-	if (FAILED(pDevice->CreateBuffer(&BufferDesc, &SubResourceData, &pBuffer)))
+	//-------------------
+	// ピクセルシェーダーの読み込み
+	//-------------------
+	ID3D11PixelShader* pPixelShader = NULL;
+	if (FAILED(D3DX11CompileFromFile(
+		"Effect.fx",
+		NULL,
+		NULL,
+		"PS",
+		"ps_5_0",
+		D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION,
+		0,
+		NULL,
+		&pCompiledShader,
+		&pErrors,
+		NULL)))
 	{
-		MessageBox(hWnd, _T("CreateBuffer"), _T("Err"), MB_ICONSTOP);
-		return 1;
+		MessageBox(0, "PixelShaderのコンパイルに失敗", 0, MB_OK);
+		return E_FAIL;
 	}
+	pDevice->CreatePixelShader(pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), NULL, &pPixelShader);
 
-	//その頂点バッファをコンテキストに設定
-	UINT Strides = sizeof(Vertex3D);
-	UINT Offsets = 0;
-	pDeviceContext->IASetVertexBuffers(0, 1, &pBuffer, &Strides, &Offsets);
-
-	//プリミティブ(ポリゴンの形状)をコンテキストに設定
-	pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	pCompiledShader->Release();
 
 
-	//頂点レイアウト作成
-	ID3D11InputLayout* pInputLayout = NULL;
-	if (FAILED(pDevice->CreateInputLayout(InElementDesc, ARRAYSIZE(InElementDesc), &g_vs_main, sizeof(g_vs_main), &pInputLayout)))
-	{
-		MessageBox(hWnd, _T("CreateInputLayout"), _T("Err"), MB_ICONSTOP);
-		return 1;
-	}
-
-	//頂点レイアウトをコンテキストに設定
-	pDeviceContext->IASetInputLayout(pInputLayout);
-
-	//頂点シェーダー生成
-	ID3D11VertexShader* pVertexShader;
-	if (FAILED(pDevice->CreateVertexShader(&g_vs_main, sizeof(g_vs_main), NULL, &pVertexShader))){
-		MessageBox(hWnd, _T("CreateVertexShader"), _T("Err"), MB_ICONSTOP);
-		return 1;
-	}
-
-
-	//頂点シェーダーをコンテキストに設定
-	pDeviceContext->VSSetShader(pVertexShader, NULL, 0);
-
-	//ピクセルシェーダー生成
-	ID3D11PixelShader* pPixelShader;
-	if (FAILED(pDevice->CreatePixelShader(&g_ps_main, sizeof(g_ps_main), NULL, &pPixelShader)))
-	{
-		MessageBox(hWnd, _T("CreateVertexShader"), _T("Err"), MB_ICONSTOP);
-		return 1;
-	}
-	//ピクセルシェーダーをコンテキストに設定
-	pDeviceContext->PSSetShader(pPixelShader, NULL, 0);
-
-	//テクスチャーを読み込んでいる
-	ID3D11ShaderResourceView* pShaderResourceView = NULL;
-	if (FAILED(D3DX11CreateShaderResourceViewFromFile(pDevice, _T("test.jpg"), NULL, NULL, &pShaderResourceView, NULL)))
-	{
-		MessageBox(hWnd, _T("D3DX11CreateShaderResourceViewFromFile"), _T("Err"), MB_ICONSTOP);
-		return 1;
-	}
-
-	//シェーダーに画像を渡す
-	ID3D11ShaderResourceView* pShaderResourceViews[] = { pShaderResourceView };
-	pDeviceContext->PSSetShaderResources(0, 1, pShaderResourceViews);
+	FBXLoader fbxLoader(pDevice);
+	fbxLoader.FileLoad("fbx//house_hinmin.fbx");
+	FBXModel  testModel(pDevice,pDeviceContext);
+	fbxLoader.GetModelData(&testModel);
 
 	// メッセージループ
 	ZeroMemory(&msg, sizeof(msg));
@@ -294,8 +289,11 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 			NowTime = timeGetTime();
 			if (NowTime - OldTime >= GAME_FPS)
 			{
+				float ClearColor[4] = { 0.1f, 0.0f, 0.25f, 1.0f };
+				pDeviceContext->ClearRenderTargetView(pRenderTargetView, ClearColor);
 				//描画
-				pDeviceContext->Draw(VERTEXNUM, 0);
+				testModel.Draw();
+				//pDeviceContext->Draw(VERTEXNUM, 0);
 				//バックバッファをスワップ
 				pDXGISwpChain->Present(0, 0);
 			}
