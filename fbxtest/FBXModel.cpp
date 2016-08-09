@@ -57,8 +57,8 @@ void FBXModel::Draw()
 	D3D11_INPUT_ELEMENT_DESC InElementDesc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 4 * 3, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 4 * 3 + 4 * 4, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, sizeof(D3DXVECTOR3), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, sizeof(D3DXVECTOR3) + sizeof(D3DXVECTOR3), D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 	//--------------------------------------
 	// シェーダーの読み込みやレイアウト作成
@@ -143,23 +143,25 @@ void FBXModel::Draw()
 	ID3D11Buffer* pBuffer;
 	m_pDevice->CreateBuffer(&BufferDesc, &InitVertexData, &pBuffer);
 
-	D3DXMATRIX World;
+	D3DXMATRIX World,Rotate;
 	D3DXMATRIX View;
 	D3DXMATRIX Proj;
-
+	static float rad = 0;
 	//ワールドトランスフォーム
 	D3DXMatrixIdentity(&World);
-
+	D3DXMatrixRotationY(&Rotate, rad);
+	D3DXMatrixMultiply(&World, &World,&Rotate);
+	rad += 0.01;
 	// ビュートランスフォーム
-	D3DXVECTOR3 vEyePt(0.0f, 5.0f, -50.0f);		//視点位置
+	D3DXVECTOR3 vEyePt(0.0f, 5.0f, -500.0f);		//視点位置
 	D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);	//注視位置
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);		//上方位置
 	D3DXMatrixLookAtLH(&View, &vEyePt, &vLookatPt, &vUpVec);
 
 	// プロジェクショントランスフォーム
-	D3DXMatrixPerspectiveFovLH(&Proj, (FLOAT)D3DX_PI / 4, (FLOAT)1280 / (FLOAT)720, 0.1f, 100.0f);
+	D3DXMatrixPerspectiveFovLH(&Proj, (FLOAT)D3DX_PI / 4, (FLOAT)1280 / (FLOAT)720, 0.1f, 1000.0f);
 
-	//使用するシェーダーのセット
+	//シェーダーをコンテキストに設定
 	m_pDeviceContext->VSSetShader(pVertexShader, NULL, 0);
 	m_pDeviceContext->PSSetShader(pPixelShader, NULL, 0);
 
@@ -192,9 +194,6 @@ void FBXModel::Draw()
 	//プリミティブ(ポリゴンの形状)をコンテキストに設定
 	m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	//シェーダーをコンテキストに設定
-	m_pDeviceContext->VSSetShader(pVertexShader, NULL, 0);
-	m_pDeviceContext->PSSetShader(pPixelShader, NULL, 0);
 
 	m_pDeviceContext->Draw(vertexNum, 0);
 }

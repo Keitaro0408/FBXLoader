@@ -13,13 +13,13 @@ cbuffer global
 
 struct VS_OUT
 {
-	float4 Pos : POSITION;
+	float4 Pos : SV_POSITION;
 	float4 Normal : NORMAL;
 	float2 Tex	: TEXCOORD;
 };
 
 //バーテックスシェーダー
-VS_OUT VS(float4 Pos : POSITION, float2 Tex : TEXCOORD, float4 Normal : NORMAL)
+VS_OUT VS(float4 Pos : POSITION, float4 Normal : NORMAL, float2 Tex : TEXCOORD)
 {
 	VS_OUT Out;
 	Out.Pos = mul(Pos, g_WVP);

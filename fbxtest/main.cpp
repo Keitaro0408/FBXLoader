@@ -170,7 +170,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 
 	ID3D11RasterizerState* pRasterizerState = NULL;
 	D3D11_RASTERIZER_DESC RasterizerDesc = {
-		D3D11_FILL_SOLID, //D3D11_FILL_WIREFRAMEにするとワイヤフレームになる（かっこいい）
+		D3D11_FILL_WIREFRAME, //D3D11_FILL_WIREFRAMEにするとワイヤフレームになる（かっこいい）
 		D3D11_CULL_NONE,	//ポリゴンの裏表を無くす
 		FALSE,
 		0,
@@ -188,87 +188,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 
 	//ラスタライザーをコンテキストに設定
 	pDeviceContext->RSSetState(pRasterizerState);
-
-	// 頂点データ(三角ポリゴン1枚)
-	Vertex3D VectorData[VERTEXNUM] =
-	{
-		{ { -0.5f, +0.5f, +0.5f }, { 1.0f, 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f } },
-		{ { +0.5f, +0.5f, +0.5f }, { 1.0f, 1.0f, 1.0f, 1.0f }, { 1.0f, 0.0f } },
-		{ { -0.5f, -0.5f, +0.5f }, { 1.0f, 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f } },
-		{ { +0.5f, -0.5f, +0.5f }, { 1.0f, 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f } }
-	};
-
-	//--------------------------------------
-	// シェーダーの読み込みやレイアウト作成
-	//--------------------------------------
-	ID3DBlob* pCompiledShader = NULL;
-	ID3DBlob *pErrors = NULL;
-
-	//-------------------
-	// 頂点シェーダーの読み込みとレイアウト作成
-	//-------------------
-	ID3D11VertexShader* pVertexShader = NULL;
-	ID3D11InputLayout* pVertexShaderLayout = NULL;
-	if (FAILED(D3DX11CompileFromFile(
-		"Effect.fx",
-		NULL,
-		NULL,
-		"VS",
-		"vs_5_0",
-		D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION,
-		0,
-		NULL,
-		&pCompiledShader,
-		&pErrors,
-		NULL)))
-	{
-		MessageBox(0, "VertexShaderのコンパイルに失敗", 0, MB_OK);
-		return E_FAIL;
-	}
-	pDevice->CreateVertexShader(pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), NULL, &pVertexShader);
-
-	//頂点レイアウト定義
-	D3D11_INPUT_ELEMENT_DESC InElementDesc[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, sizeof(D3DXVECTOR3), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, sizeof(D3DXVECTOR3) + sizeof(D3DXVECTOR3), D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-
-	//頂点インプットレイアウトを作成
-	pDevice->CreateInputLayout(
-		InElementDesc,
-		sizeof(InElementDesc) / sizeof(InElementDesc[0]),
-		pCompiledShader->GetBufferPointer(),
-		pCompiledShader->GetBufferSize(),
-		&pVertexShaderLayout);
-
-	pCompiledShader->Release();
-
-	//-------------------
-	// ピクセルシェーダーの読み込み
-	//-------------------
-	ID3D11PixelShader* pPixelShader = NULL;
-	if (FAILED(D3DX11CompileFromFile(
-		"Effect.fx",
-		NULL,
-		NULL,
-		"PS",
-		"ps_5_0",
-		D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION,
-		0,
-		NULL,
-		&pCompiledShader,
-		&pErrors,
-		NULL)))
-	{
-		MessageBox(0, "PixelShaderのコンパイルに失敗", 0, MB_OK);
-		return E_FAIL;
-	}
-	pDevice->CreatePixelShader(pCompiledShader->GetBufferPointer(), pCompiledShader->GetBufferSize(), NULL, &pPixelShader);
-
-	pCompiledShader->Release();
-
 
 	FBXLoader fbxLoader(pDevice);
 	fbxLoader.FileLoad("fbx//house_hinmin.fbx");
@@ -289,7 +208,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 			NowTime = timeGetTime();
 			if (NowTime - OldTime >= GAME_FPS)
 			{
-				float ClearColor[4] = { 0.1f, 0.0f, 0.25f, 1.0f };
+				float ClearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 				pDeviceContext->ClearRenderTargetView(pRenderTargetView, ClearColor);
 				//描画
 				testModel.Draw();

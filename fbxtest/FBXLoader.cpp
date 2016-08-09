@@ -423,6 +423,8 @@ void FBXLoader::GetMesh(fbxsdk::FbxNodeAttribute* _pAttribute)
 	ModelData->PolygonCount = PolygonCount;
 	ModelData->PrimitiveCount = PrimitiveCount;
 	ModelData->pVertex = new UserVertex[VertexCount];		// 現在はすべての頂点ぶん確保
+	ModelData->pIndex.IndexAry = IndexAry;
+	ModelData->pIndex.IndexCount = VertexCount;
 
 
 	// 頂点情報をセット

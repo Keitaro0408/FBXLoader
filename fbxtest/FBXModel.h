@@ -5,6 +5,12 @@
 #include <vector>
 #include <d3dx10.h>	
 
+// インデックスを格納する構造体
+struct UserIndex
+{
+	int	IndexCount;		// インデックス数
+	WORD* IndexAry;		// インデックスデータ
+};
 
 struct UserMaterial
 {
@@ -36,6 +42,7 @@ struct FBXModelData
 	int							PrimitiveCount;		// 三角ポリゴンの数
 	int							ControlPointCount;	// コントロールポイントの数
 	UserVertex*					pVertex;			// 頂点データ
+	UserIndex					pIndex;				// インデックス系データ
 	std::vector<UserTexture*>	pTextureData;		// テクスチャ情報
 	UserMaterial				Material;			// マテリアル情報
 };
