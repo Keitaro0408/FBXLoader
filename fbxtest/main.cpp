@@ -170,7 +170,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 
 	ID3D11RasterizerState* pRasterizerState = NULL;
 	D3D11_RASTERIZER_DESC RasterizerDesc = {
-		D3D11_FILL_WIREFRAME, //D3D11_FILL_WIREFRAMEにするとワイヤフレームになる（かっこいい）
+		D3D11_FILL_WIREFRAME, //D3D11_FILL_WIREFRAMEにするとワイヤフレームになる（かっこいい） 
 		D3D11_CULL_NONE,	//ポリゴンの裏表を無くす
 		FALSE,
 		0,
@@ -193,7 +193,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 	fbxLoader.FileLoad("fbx//house_seleb.fbx");
 	FBXModel  testModel(pDevice,pDeviceContext);
 	fbxLoader.GetModelData(&testModel);
-
+	
 	// メッセージループ
 	ZeroMemory(&msg, sizeof(msg));
 	while (msg.message != WM_QUIT)

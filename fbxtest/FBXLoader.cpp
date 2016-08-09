@@ -27,6 +27,7 @@ m_pFBXModel(NULL)
 
 FBXLoader::~FBXLoader()
 {
+
 	m_pFBXScene->Destroy();
 	m_pFBXIOSettings->Destroy();
 	m_pFBXImporter->Destroy();
@@ -341,74 +342,69 @@ void FBXLoader::GetMesh(fbxsdk::FbxNodeAttribute* _pAttribute)
 	// Nodeに戻る
 	fbxsdk::FbxNode* Node = pFbxMesh->GetNode();
 
-	//// materialの数を取得する
-	//int materialcount = node->getmaterialcount();
+	// Materialの数を取得する
+	int MaterialCount = Node->GetMaterialCount();
 
-	//for (int i = 0; i < materialcount; i++)
-	//{
-	//	if (materialcount > 1)
-	//	{
-	//		messagebox(null, text("複数のマテリアルはわりあてられません"), text("エラー"), mb_ok);
-	//		break;
-	//	}
-
-
-	//	// マテリアルの取得
-	//	fbxsdk::fbxsurfacematerial* material = node->getmaterial(i);
-
-	//	if (material->getclassid().is(fbxsdk::fbxsurfacelambert::classid))
-	//	{
-	//		// lambertにダウンキャスト
-	//		fbxsdk::fbxsurfacelambert* lambert = (fbxsdk::fbxsurfacelambert*)material;
+	for (int i = 0; i < MaterialCount; i++)
+	{
+		if (MaterialCount > 1)
+		{
+			MessageBox(NULL, TEXT("複数のマテリアルはわりあてられません"), TEXT("エラー"), MB_OK);
+			break;
+		}
 
 
-	//		// materialはカラーとバンプとすぺきゅらーを優先的にしたい
+		// マテリアルの取得
+		fbxsdk::FbxSurfaceMaterial* Material = Node->GetMaterial(i);
 
-	//		// アンビエント
-	//		materialdata.ambient.r = (float)lambert->ambient.get().mdata[0] * (float)lambert->ambientfactor.get();
-	//		materialdata.ambient.g = (float)lambert->ambient.get().mdata[1] * (float)lambert->ambientfactor.get();
-	//		materialdata.ambient.b = (float)lambert->ambient.get().mdata[2] * (float)lambert->ambientfactor.get();
-	//		gettexturename(lambert, fbxsdk::fbxsurfacematerial::sambient, &texturefilename, &textureuvsetname, &texturefilecount);
-
-	//		// ディフューズ
-	//		materialdata.diffuse.r = (float)lambert->diffuse.get().mdata[0] * (float)lambert->diffusefactor.get();
-	//		materialdata.diffuse.g = (float)lambert->diffuse.get().mdata[1] * (float)lambert->diffusefactor.get();
-	//		materialdata.diffuse.b = (float)lambert->diffuse.get().mdata[2] * (float)lambert->diffusefactor.get();
-	//		gettexturename(lambert, fbxsdk::fbxsurfacematerial::sdiffuse, &texturefilename, &textureuvsetname, &texturefilecount);
-
-	//		// エミッシブ
-	//		materialdata.emissive.r = (float)lambert->emissive.get().mdata[0] * (float)lambert->emissivefactor.get();
-	//		materialdata.emissive.g = (float)lambert->emissive.get().mdata[1] * (float)lambert->emissivefactor.get();
-	//		materialdata.emissive.b = (float)lambert->emissive.get().mdata[2] * (float)lambert->emissivefactor.get();
-	//		gettexturename(lambert, fbxsdk::fbxsurfacematerial::semissive, &texturefilename, &textureuvsetname, &texturefilecount);
-
-	//		// 透過度
-	//		materialdata.ambient.a = (float)lambert->transparentcolor.get().mdata[0];
-	//		materialdata.diffuse.a = (float)lambert->transparentcolor.get().mdata[1];
-	//		materialdata.emissive.a = (float)lambert->transparentcolor.get().mdata[2];
-	//		gettexturename(lambert, fbxsdk::fbxsurfacematerial::stransparentcolor, &texturefilename, &textureuvsetname, &texturefilecount);
+		if (Material->GetClassId().Is(fbxsdk::FbxSurfaceLambert::ClassId))
+		{
+			// Lambertにダウンキャスト
+			fbxsdk::FbxSurfaceLambert* lambert = (fbxsdk::FbxSurfaceLambert*)Material;
 
 
-	//		gettexturename(lambert, fbxsdk::fbxsurfacematerial::snormalmap, &texturefilename, &textureuvsetname, &texturefilecount);
-	//	}
-	//	else if (material->getclassid().is(fbxsdk::fbxsurfacephong::classid))
-	//	{
-	//		// phongにダウンキャスト
-	//		fbxsdk::fbxsurfacephong* phong = (fbxsdk::fbxsurfacephong*)material;
+			// Materialはカラーとバンプとすぺきゅらーを優先的にしたい
 
-	//		/// @todo phongもやっとく
+			// アンビエント
+			MaterialData.Ambient.r = (float)lambert->Ambient.Get().mData[0] * (float)lambert->AmbientFactor.Get();
+			MaterialData.Ambient.g = (float)lambert->Ambient.Get().mData[1] * (float)lambert->AmbientFactor.Get();
+			MaterialData.Ambient.b = (float)lambert->Ambient.Get().mData[2] * (float)lambert->AmbientFactor.Get();
 
-	//		messagebox(null, text("materialがphongです(対応していません)"), text("エラー"), mb_ok);
-	//	}
-	//	else
-	//	{
-	//		/// @todo unityちゃんなどのパターンは考慮しない
+			// ディフューズ
+			MaterialData.Diffuse.r = (float)lambert->Diffuse.Get().mData[0] * (float)lambert->DiffuseFactor.Get();
+			MaterialData.Diffuse.g = (float)lambert->Diffuse.Get().mData[1] * (float)lambert->DiffuseFactor.Get();
+			MaterialData.Diffuse.b = (float)lambert->Diffuse.Get().mData[2] * (float)lambert->DiffuseFactor.Get();
 
-	//		// 現状はほかのパターンはおいておく
-	//		messagebox(null, text("materialが不明です"), text("エラー"), mb_ok);
-	//	}
+			// エミッシブ
+			MaterialData.Emissive.r = (float)lambert->Emissive.Get().mData[0] * (float)lambert->EmissiveFactor.Get();
+			MaterialData.Emissive.g = (float)lambert->Emissive.Get().mData[1] * (float)lambert->EmissiveFactor.Get();
+			MaterialData.Emissive.b = (float)lambert->Emissive.Get().mData[2] * (float)lambert->EmissiveFactor.Get();
 
-	//}
+			// 透過度
+			MaterialData.Ambient.a = (float)lambert->TransparentColor.Get().mData[0];
+			MaterialData.Diffuse.a = (float)lambert->TransparentColor.Get().mData[1];
+			MaterialData.Emissive.a = (float)lambert->TransparentColor.Get().mData[2];
+
+
+		}
+		else if (Material->GetClassId().Is(fbxsdk::FbxSurfacePhong::ClassId))
+		{
+			// Phongにダウンキャスト
+			fbxsdk::FbxSurfacePhong* phong = (fbxsdk::FbxSurfacePhong*)Material;
+
+			/// @todo Phongもやっとく
+
+			MessageBox(NULL, TEXT("MaterialがPhongです(対応していません)"), TEXT("エラー"), MB_OK);
+		}
+		else
+		{
+			/// @todo Unityちゃんなどのパターンは考慮しない
+
+			// 現状はほかのパターンはおいておく
+			MessageBox(NULL, TEXT("Materialが不明です"), TEXT("エラー"), MB_OK);
+		}
+
+	}
 
 
 
@@ -503,8 +499,6 @@ void FBXLoader::GetMesh(fbxsdk::FbxNodeAttribute* _pAttribute)
 	//								解放処理
 	//-------------------------------------------------------------------------
 
-
-
 	delete[] pNormalVec;
 
 	for (unsigned int i = 0; i < TextureUv.size(); i++)
@@ -513,5 +507,6 @@ void FBXLoader::GetMesh(fbxsdk::FbxNodeAttribute* _pAttribute)
 	}
 
 	delete[] pVertex;
+
 }
 
