@@ -194,6 +194,11 @@ void FBXModel::Draw()
 	pVertexShaderLayout->Release();
 	//プリミティブ(ポリゴンの形状)をコンテキストに設定
 	m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	//そのテクスチャーをコンテキストに設定
+	for (unsigned int i = 0; i < m_pFbxModelData.size(); i++)
+	{
+		m_pDeviceContext->PSSetShaderResources(0, 1, &m_pFbxModelData[i]->pTextureData[i]->pTexture);
+	}
 
 
 	m_pDeviceContext->Draw(vertexNum, 0);

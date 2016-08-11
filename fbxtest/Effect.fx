@@ -1,10 +1,13 @@
-Texture2D g_texColor: register(t0);
-SamplerState g_samLinear : register(s0);
+Texture2D txDiffuse : register(t0);
+SamplerState samLinear : register(s0); 
+
 struct pixcelIn
 {
-	float4 pos : POSITION;
-	float4 col : COLOR;
+	float4 Pos : SV_POSITION;
+	float4 Col : COLOR;
+	float2 Tex : TEXCOORD0;
 };
+
 //グローバル
 cbuffer global
 {
@@ -29,8 +32,19 @@ VS_OUT VS(float4 Pos : POSITION, float4 Normal : NORMAL, float2 Tex : TEXCOORD)
 }
 
 //ピクセルシェーダー
-float4 PS(float4 pos : SV_POSITION) : SV_Target
+float4 PS(pixcelIn IN) : SV_Target
 {
-	return pos;
+	pixcelIn OUT;
+
+	//テクスチャーを貼る
+	OUT.Col = txDiffuse.Sample(samLinear, IN.Tex);
+
+	return OUT.Col; 
 }
+
+//ピクセルシェーダー
+//float4 PS(float4 pos : SV_POSITION) : SV_Target
+//{
+//	return pos;
+//}
 

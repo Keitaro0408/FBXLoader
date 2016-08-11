@@ -90,6 +90,45 @@ void FBXLoader::RecursiveNode(fbxsdk::FbxNode* pNode)
 	}
 }
 
+void FBXLoader::GetTextureName(
+	fbxsdk::FbxSurfaceMaterial* material,
+	const char* matFlag,
+	std::vector<const char*>* pOutFileName,
+	std::vector<fbxsdk::FbxString>* pOutUvSetName,
+	int* OutCount)
+{
+	// プロパティ取得(DiffusやEmissiveなどのデータの塊)
+	fbxsdk::FbxProperty Property = material->FindProperty(matFlag);
+
+	// プロパティにあてられてるレイヤーテクスチャの数取得
+	int LayerTextureCount = Property.GetSrcObjectCount<fbxsdk::FbxLayeredTexture>();
+
+	// レイヤーテクスチャがなければ通常テクスチャを探す
+	if (LayerTextureCount == 0)
+	{
+		// プロパティにあてられてるテクスチャの数を取得
+		int TextureCount = Property.GetSrcObjectCount<fbxsdk::FbxFileTexture>();
+		for (int i = 0; i < TextureCount; ++i)
+		{
+			// テクスチャ数カウント
+			(*OutCount)++;
+			// テクスチャ取得
+			fbxsdk::FbxFileTexture* fbxTexture = FbxCast<fbxsdk::FbxFileTexture>(Property.GetSrcObject<fbxsdk::FbxFileTexture>(i));
+			pOutUvSetName->push_back(fbxTexture->UVSet.Get());
+			pOutFileName->push_back(fbxTexture->GetRelativeFileName());
+			// GetNameは絶対パス取得やけど、絶対パスってのは、モデルを作成した場所への絶対パスらしいから、モデルを作成した人に依存するっぽい(つまり使えない)
+			// GetRelativeFileNameは相対パス取得(相対パスがたまにおかしいのもモデルを作成した人依存だから)
+		}
+	}
+	else
+	{
+		// レイヤテクスチャの取得は考え中
+		// というかマルチテクスチャをどう管理するか考えてる最中
+	}
+
+}
+
+
 void FBXLoader::GetMesh(fbxsdk::FbxNodeAttribute* _pAttribute)
 {
 
@@ -363,27 +402,32 @@ void FBXLoader::GetMesh(fbxsdk::FbxNodeAttribute* _pAttribute)
 			fbxsdk::FbxSurfaceLambert* lambert = (fbxsdk::FbxSurfaceLambert*)Material;
 
 
-			// Materialはカラーとバンプとすぺきゅらーを優先的にしたい
-
 			// アンビエント
 			MaterialData.Ambient.r = (float)lambert->Ambient.Get().mData[0] * (float)lambert->AmbientFactor.Get();
 			MaterialData.Ambient.g = (float)lambert->Ambient.Get().mData[1] * (float)lambert->AmbientFactor.Get();
 			MaterialData.Ambient.b = (float)lambert->Ambient.Get().mData[2] * (float)lambert->AmbientFactor.Get();
+			GetTextureName(lambert, fbxsdk::FbxSurfaceMaterial::sAmbient, &TextureFileName, &TextureUvSetName, &TextureFileCount);
 
 			// ディフューズ
 			MaterialData.Diffuse.r = (float)lambert->Diffuse.Get().mData[0] * (float)lambert->DiffuseFactor.Get();
 			MaterialData.Diffuse.g = (float)lambert->Diffuse.Get().mData[1] * (float)lambert->DiffuseFactor.Get();
 			MaterialData.Diffuse.b = (float)lambert->Diffuse.Get().mData[2] * (float)lambert->DiffuseFactor.Get();
+			GetTextureName(lambert, fbxsdk::FbxSurfaceMaterial::sDiffuse, &TextureFileName, &TextureUvSetName, &TextureFileCount);
 
 			// エミッシブ
 			MaterialData.Emissive.r = (float)lambert->Emissive.Get().mData[0] * (float)lambert->EmissiveFactor.Get();
 			MaterialData.Emissive.g = (float)lambert->Emissive.Get().mData[1] * (float)lambert->EmissiveFactor.Get();
 			MaterialData.Emissive.b = (float)lambert->Emissive.Get().mData[2] * (float)lambert->EmissiveFactor.Get();
+			GetTextureName(lambert, fbxsdk::FbxSurfaceMaterial::sEmissive, &TextureFileName, &TextureUvSetName, &TextureFileCount);
 
 			// 透過度
 			MaterialData.Ambient.a = (float)lambert->TransparentColor.Get().mData[0];
 			MaterialData.Diffuse.a = (float)lambert->TransparentColor.Get().mData[1];
 			MaterialData.Emissive.a = (float)lambert->TransparentColor.Get().mData[2];
+			GetTextureName(lambert, fbxsdk::FbxSurfaceMaterial::sTransparentColor, &TextureFileName, &TextureUvSetName, &TextureFileCount);
+
+
+			GetTextureName(lambert, fbxsdk::FbxSurfaceMaterial::sNormalMap, &TextureFileName, &TextureUvSetName, &TextureFileCount);
 
 
 		}
