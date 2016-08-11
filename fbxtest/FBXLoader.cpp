@@ -514,11 +514,11 @@ void FBXLoader::GetMesh(fbxsdk::FbxNodeAttribute* _pAttribute)
 
 	}
 
-	//// マテリアルのでーたがあるなら詰める
-	//if (MaterialCount != 0)
-	//{
-	//	ModelData->Material = MaterialData;
-	//}
+	// マテリアルのでーたがあるなら詰める
+	if (MaterialCount != 0)
+	{
+		ModelData->Material = MaterialData;
+	}
 
 	for (int i = 0; i < TextureFileCount; i++)
 	{

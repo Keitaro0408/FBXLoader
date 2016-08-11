@@ -33,6 +33,11 @@ FBXModel::~FBXModel()
 		{
 			delete[] m_pFbxModelData[i]->pVertex;
 		}
+		if (m_pFbxModelData[i]->pIndex.IndexAry != NULL)
+		{
+			delete[] m_pFbxModelData[i]->pIndex.IndexAry;
+		}
+
 		delete m_pFbxModelData[i];
 	}
 }
