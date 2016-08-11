@@ -158,7 +158,7 @@ void FBXModel::Draw()
 	D3DXMatrixLookAtLH(&View, &vEyePt, &vLookatPt, &vUpVec);
 
 	// プロジェクショントランスフォーム
-	D3DXMatrixPerspectiveFovLH(&Proj, (FLOAT)D3DX_PI / 4, (FLOAT)1280 / (FLOAT)720, 0.1f, 1000.0f);
+	D3DXMatrixPerspectiveFovLH(&Proj, (FLOAT)D3DX_PI / 4, (FLOAT)1280 / (FLOAT)720, 0.1f, 5000.0f);
 
 	//シェーダーをコンテキストに設定
 	m_pDeviceContext->VSSetShader(pVertexShader, NULL, 0);
@@ -181,7 +181,7 @@ void FBXModel::Draw()
 	// コンスタントバッファーをセット
 	m_pDeviceContext->VSSetConstantBuffers(0, 1, &pConstantBuffer);
 	m_pDeviceContext->PSSetConstantBuffers(0, 1, &pConstantBuffer);
-
+	pConstantBuffer->Release();
 
 	//その頂点バッファをコンテキストに設定
 	UINT Strides = sizeof(UserVertex);
@@ -199,7 +199,6 @@ void FBXModel::Draw()
 	{
 		m_pDeviceContext->PSSetShaderResources(0, 1, &m_pFbxModelData[i]->pTextureData[i]->pTexture);
 	}
-
 
 	m_pDeviceContext->Draw(vertexNum, 0);
 }

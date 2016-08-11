@@ -155,8 +155,32 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 		return 1;
 	}
 
+	//--------------------
+	// バックバッファとデプスステンシルバッファ
+	//--------------------
+	ID3D11Texture2D* pDepthStencilBuffer;			// 深度ステンシルバッファ
+	ID3D11DepthStencilView* pDepthStencilView;		// 深度ステンシルビュー
+	//デプスステンシルビュー
+	D3D11_TEXTURE2D_DESC DepthDesc;
+	DepthDesc.Width = CLIENT_WIDTH;
+	DepthDesc.Height = CLIENT_HEIGHT;
+	DepthDesc.MipLevels = 1;
+	DepthDesc.ArraySize = 1;
+	DepthDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	DepthDesc.SampleDesc.Count = 1;
+	DepthDesc.SampleDesc.Quality = 0;
+	DepthDesc.Usage = D3D11_USAGE_DEFAULT;
+	DepthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	DepthDesc.CPUAccessFlags = 0;
+	DepthDesc.MiscFlags = 0;
+	pDevice->CreateTexture2D(&DepthDesc, NULL, &pDepthStencilBuffer);
+	pDevice->CreateDepthStencilView(pDepthStencilBuffer, NULL, &pDepthStencilView);
+
+	// レンダーターゲットビューとデプスステンシルビューをセット
+	pDeviceContext->OMSetRenderTargets(1, &pRenderTargetView, pDepthStencilView);
+
 	//更にその描画ターゲットをコンテキストに設定
-	pDeviceContext->OMSetRenderTargets(1, &pRenderTargetView, NULL);
+	//pDeviceContext->OMSetRenderTargets(1, &pRenderTargetView, NULL);
 
 	//ビューポート設定
 	D3D11_VIEWPORT vp;
@@ -190,7 +214,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 	pDeviceContext->RSSetState(pRasterizerState);
 
 	FBXLoader fbxLoader(pDevice);
-	fbxLoader.FileLoad("fbx//house_hinmin.fbx");
+	fbxLoader.FileLoad("fbx//house_seleb.fbx");
 	FBXModel  testModel(pDevice,pDeviceContext);
 	fbxLoader.GetModelData(&testModel);
 	
@@ -210,6 +234,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 			{
 				float ClearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 				pDeviceContext->ClearRenderTargetView(pRenderTargetView, ClearColor);
+				pDeviceContext->ClearDepthStencilView(pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 				//描画
 				testModel.Draw();
 				//pDeviceContext->Draw(VERTEXNUM, 0);
@@ -218,6 +243,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 			}
 		}
 	}
+	pDepthStencilBuffer->Release();
+	pDepthStencilView->Release();
 	SAFE_RELEASE(pRenderTargetView);
 	SAFE_RELEASE(pBackBuffer);
 	SAFE_RELEASE(pDXGISwpChain);
