@@ -190,7 +190,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 	pDeviceContext->RSSetState(pRasterizerState);
 
 	FBXLoader fbxLoader(pDevice);
-	fbxLoader.FileLoad("fbx//house_seleb.fbx");
+	fbxLoader.FileLoad("fbx//house_hinmin.fbx");
 	FBXModel  testModel(pDevice,pDeviceContext);
 	fbxLoader.GetModelData(&testModel);
 	

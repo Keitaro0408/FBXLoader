@@ -193,7 +193,7 @@ void FBXModel::Draw()
 	m_pDeviceContext->IASetInputLayout(pVertexShaderLayout);
 	pVertexShaderLayout->Release();
 	//プリミティブ(ポリゴンの形状)をコンテキストに設定
-	m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 
 	m_pDeviceContext->Draw(vertexNum, 0);
