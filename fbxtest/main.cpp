@@ -17,16 +17,8 @@
 #define CLIENT_HEIGHT  720
 #define GAME_FPS (1000/60)
 #define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }
-#define VERTEXNUM 4 //ポリゴンの頂点数
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
-
-//ポリゴン頂点構造体
-struct Vertex3D {
-	float pos[3];	//x-y-z
-	float col[4];	//r-g-b-a
-	float tex[2];	//tu-tv
-};
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdShow)
 {
@@ -120,7 +112,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 	DXGI_SWAP_CHAIN_DESC DXGISwapChainDesc;
 	DXGISwapChainDesc.BufferDesc.Width = CLIENT_WIDTH;
 	DXGISwapChainDesc.BufferDesc.Height = CLIENT_HEIGHT;
-	DXGISwapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
+	DXGISwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
 	DXGISwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 	DXGISwapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	DXGISwapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
@@ -179,9 +171,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 	// レンダーターゲットビューとデプスステンシルビューをセット
 	pDeviceContext->OMSetRenderTargets(1, &pRenderTargetView, pDepthStencilView);
 
-	//更にその描画ターゲットをコンテキストに設定
-	//pDeviceContext->OMSetRenderTargets(1, &pRenderTargetView, NULL);
-
 	//ビューポート設定
 	D3D11_VIEWPORT vp;
 	vp.TopLeftX = 0;
@@ -229,18 +218,13 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, INT iCmdSh
 		}
 		else
 		{
-			NowTime = timeGetTime();
-			if (NowTime - OldTime >= GAME_FPS)
-			{
-				float ClearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-				pDeviceContext->ClearRenderTargetView(pRenderTargetView, ClearColor);
-				pDeviceContext->ClearDepthStencilView(pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-				//描画
-				testModel.Draw();
-				//pDeviceContext->Draw(VERTEXNUM, 0);
-				//バックバッファをスワップ
-				pDXGISwpChain->Present(0, 0);
-			}
+			float ClearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+			pDeviceContext->ClearRenderTargetView(pRenderTargetView, ClearColor);
+			pDeviceContext->ClearDepthStencilView(pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+			//描画
+			testModel.Draw();
+			//バックバッファをスワップ
+			pDXGISwpChain->Present(1, 0);
 		}
 	}
 	pDepthStencilBuffer->Release();

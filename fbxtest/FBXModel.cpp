@@ -128,11 +128,13 @@ void FBXModel::Draw()
 
 	int vertexNum = 0;
 	UserVertex *pVertex = NULL;
+
 	for (unsigned int i = 0; i < m_pFbxModelData.size(); i++)
 	{
 		vertexNum = m_pFbxModelData[i]->pIndex.IndexCount;
 		pVertex = m_pFbxModelData[i]->pVertex;
 	}
+	
 	//頂点バッファ作成
 	D3D11_BUFFER_DESC BufferDesc;
 	BufferDesc.ByteWidth = sizeof(UserVertex) * vertexNum;
@@ -155,7 +157,7 @@ void FBXModel::Draw()
 	D3DXMatrixIdentity(&World);
 	D3DXMatrixRotationY(&Rotate, rad);
 	D3DXMatrixMultiply(&World, &World,&Rotate);
-	rad += 0.01;
+	rad += 0.05;
 	// ビュートランスフォーム
 	D3DXVECTOR3 vEyePt(0.0f, 650.0f, -800.0f);		//視点位置
 	D3DXVECTOR3 vLookatPt(0.0f, 150.0f, 0.0f);	//注視位置
